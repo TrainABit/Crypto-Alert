@@ -2,11 +2,6 @@ name: ios
 
 on:
   workflow_dispatch:
-    inputs:
-      xcode:
-        description: "Xcode app to build with, e.g. Xcode_16.4.app (default: newest on the runner)"
-        required: false
-        default: ""
   push:
     paths: ["ios/**", ".github/workflows/ios.yml"]
   pull_request:
@@ -15,6 +10,12 @@ on:
 jobs:
   build:
     runs-on: macos-15
+    strategy:
+      fail-fast: false
+      matrix:
+        # Newest installed release of each major version: what developers run today and the next one.
+        xcode_major: ["16", "26"]
+    name: build (Xcode ${{ matrix.xcode_major }})
     defaults:
       run:
         working-directory: ios
@@ -23,11 +24,9 @@ jobs:
       - name: Select Xcode
         run: |
           ls -d /Applications/Xcode*.app
-          if [ -n "${{ github.event.inputs.xcode }}" ]; then
-            sudo xcode-select -s "/Applications/${{ github.event.inputs.xcode }}"
-          else
-            sudo xcode-select -s "$(ls -d /Applications/Xcode*.app | sort -V | tail -1)"
-          fi
+          app="$(ls -d /Applications/Xcode_${{ matrix.xcode_major }}*.app | sort -V | tail -1)"
+          test -n "$app" || { echo "no Xcode ${{ matrix.xcode_major }} on this runner"; exit 1; }
+          sudo xcode-select -s "$app"
           xcodebuild -version
       - name: Install XcodeGen
         run: brew install xcodegen
@@ -43,6 +42,6 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: xcodebuild-log
+          name: xcodebuild-log-xcode-${{ matrix.xcode_major }}
           path: ios/xcodebuild.log
           if-no-files-found: ignore
