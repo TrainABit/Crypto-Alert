@@ -1,0 +1,64 @@
+# XcodeGen project spec. Run `xcodegen generate` in this folder, then open CryptoAlert.xcodeproj.
+name: CryptoAlert
+options:
+  bundleIdPrefix: com.trainabit
+  deploymentTarget:
+    iOS: "17.0"
+  createIntermediateGroups: true
+  generateEmptyDirectories: true
+settings:
+  base:
+    SWIFT_VERSION: "5.0"
+    SWIFT_STRICT_CONCURRENCY: minimal
+    MARKETING_VERSION: "0.1.0"
+    CURRENT_PROJECT_VERSION: "1"
+    # Set your Apple Developer team id here or in Xcode's Signing & Capabilities tab.
+    DEVELOPMENT_TEAM: ""
+    CODE_SIGN_STYLE: Automatic
+targets:
+  CryptoAlert:
+    type: application
+    platform: iOS
+    sources:
+      - path: CryptoAlert
+        excludes:
+          - "Config/**"
+      - path: CryptoAlert/Config
+        type: folder
+        buildPhase: none
+    info:
+      path: CryptoAlert/Info.plist
+      properties:
+        CFBundleDisplayName: Crypto Alert
+        CFBundleShortVersionString: $(MARKETING_VERSION)
+        CFBundleVersion: $(CURRENT_PROJECT_VERSION)
+        UILaunchScreen: {}
+        UIBackgroundModes: [remote-notification]
+        UISupportedInterfaceOrientations: [UIInterfaceOrientationPortrait]
+        ITSAppUsesNonExemptEncryption: false
+        NSAppTransportSecurity:
+          NSAllowsLocalNetworking: true
+    entitlements:
+      path: CryptoAlert/CryptoAlert.entitlements
+      properties:
+        aps-environment: development
+        com.apple.developer.applesignin: [Default]
+        com.apple.developer.usernotifications.time-sensitive: true
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.trainabit.cryptoalert
+        ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
+        ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME: AccentColor
+        TARGETED_DEVICE_FAMILY: "1"
+        ENABLE_USER_SCRIPT_SANDBOXING: YES
+schemes:
+  CryptoAlert:
+    build:
+      targets:
+        CryptoAlert: all
+    run:
+      config: Debug
+      # Local StoreKit testing without App Store Connect. Remove to test against the sandbox.
+      storeKitConfiguration: CryptoAlert/Config/CryptoAlert.storekit
+    archive:
+      config: Release
