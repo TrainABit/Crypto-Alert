@@ -2,6 +2,11 @@ name: ios
 
 on:
   workflow_dispatch:
+    inputs:
+      xcode:
+        description: "Xcode app to build with, e.g. Xcode_16.4.app (default: newest on the runner)"
+        required: false
+        default: ""
   push:
     paths: ["ios/**", ".github/workflows/ios.yml"]
   pull_request:
@@ -15,9 +20,14 @@ jobs:
         working-directory: ios
     steps:
       - uses: actions/checkout@v4
-      - name: Select the newest Xcode on the runner
+      - name: Select Xcode
         run: |
-          sudo xcode-select -s "$(ls -d /Applications/Xcode*.app | sort -V | tail -1)"
+          ls -d /Applications/Xcode*.app
+          if [ -n "${{ github.event.inputs.xcode }}" ]; then
+            sudo xcode-select -s "/Applications/${{ github.event.inputs.xcode }}"
+          else
+            sudo xcode-select -s "$(ls -d /Applications/Xcode*.app | sort -V | tail -1)"
+          fi
           xcodebuild -version
       - name: Install XcodeGen
         run: brew install xcodegen

@@ -16,14 +16,11 @@ actor APIClient {
         configuration.waitsForConnectivity = true
         session = URLSession(configuration: configuration)
 
-        let iso = ISO8601DateFormatter()
-        iso.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
-        let isoPlain = ISO8601DateFormatter()
-        isoPlain.formatOptions = [.withInternetDateTime]
         decoder = JSONDecoder()
         decoder.dateDecodingStrategy = .custom { decoder in
             let value = try decoder.singleValueContainer().decode(String.self)
-            if let date = iso.date(from: value) ?? isoPlain.date(from: value) { return date }
+            if let date = try? Date(value, strategy: .iso8601.year().month().day().time(includingFractionalSeconds: true)) { return date }
+            if let date = try? Date(value, strategy: .iso8601) { return date }
             throw DecodingError.dataCorrupted(.init(codingPath: decoder.codingPath, debugDescription: "Bad date \(value)"))
         }
         encoder = JSONEncoder()

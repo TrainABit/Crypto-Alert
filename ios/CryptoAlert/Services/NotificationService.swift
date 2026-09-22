@@ -38,11 +38,11 @@ final class NotificationService: NSObject, UNUserNotificationCenterDelegate {
         authorizationStatus = settings.authorizationStatus
     }
 
-    /// Ask in context, right after the user creates their first alert. Time-sensitive delivery is requested up front.
+    /// Ask in context, right after the user creates their first alert. Time-sensitive delivery comes from the entitlement.
     @discardableResult
     func requestAuthorization() async -> Bool {
         do {
-            let granted = try await UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .sound, .badge, .timeSensitive])
+            let granted = try await UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .sound, .badge])
             await refreshStatus()
             if granted { UIApplication.shared.registerForRemoteNotifications() }
             return granted
