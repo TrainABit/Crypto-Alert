@@ -1,0 +1,34 @@
+services:
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: cryptoalert
+      POSTGRES_PASSWORD: cryptoalert
+      POSTGRES_DB: cryptoalert
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U cryptoalert"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  backend:
+    build: .
+    depends_on:
+      db:
+        condition: service_healthy
+    env_file:
+      - .env
+    environment:
+      DATABASE_URL: postgres://cryptoalert:cryptoalert@db:5432/cryptoalert
+      PORT: "8080"
+    ports:
+      - "8080:8080"
+    volumes:
+      # Mount the APNs .p8 key read-only and set APNS_PRIVATE_KEY_PATH=/run/secrets/AuthKey.p8 in .env
+      - ./secrets:/run/secrets:ro
+    restart: unless-stopped
+
+volumes:
+  pgdata:
